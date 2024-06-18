@@ -160,7 +160,7 @@ void add_student() {
 
         file = fopen("student.txt", "r");
 
-        long max_len = 50+1;
+        long max_len = 55+1;
         char buff[max_len+1];
 
         fseek(file, -max_len, SEEK_END);
@@ -181,12 +181,22 @@ void add_student() {
                 count++;
             }
             id = atoi(id_str)+1;
-
         }
     }
+
+    char entry[55];
+    sprintf(entry,"%04d,NAME:%s,YEAR:%d,CLASS%s", id, name, year, class_input);
+    size_t entry_length = strlen(entry);
+
+    if (entry_length < 55) {
+        for (int i = entry_length; i < 54; ++i) {
+            entry[entry_length] = " ";
+        }
+    }
+
     file = fopen("student.txt","a");
 
-    fprintf(file, "\n%d,NAME:%s,YEAR:%d,CLASS:%s", id, name, year, class_input);
+    fprintf(file, "\n%04d,NAME:%s,YEAR:%d,CLASS:%s", id, name, year, class_input);
 
     fclose(file);
 }
@@ -225,5 +235,14 @@ int read_line(char s[], int maxlen) {
 
 
 int main(void) {
-    print_main_menu();
+   //print_main_menu();
+   char str[10] = "BalazsG";
+   size_t strlenght = strlen(str);
+
+   for (int i = strlenght; i < 10; ++i) {
+       printf("\n%d", i);
+       str[i] = 'A';
+   }
+   printf("\n%s", str);
+
 }
