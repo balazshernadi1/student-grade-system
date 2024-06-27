@@ -67,7 +67,7 @@ void print_manage_student_menu() {
         default: return;
 
         case 1: add_student();
-        case 2: find_student();
+       // case 2: find_student();
     }
 
 }
@@ -160,31 +160,26 @@ void add_student() {
     //find out if the file exists, if it does then find the size of the file.
     //if the file size is less than 54 chars then no newline.
 
-    FILE * file = fopen("student.dat", "r");
+    FILE * file = fopen("student.dat", "a+");
 
     fseek(file, 0, SEEK_END);
 
-    bool file_empty = ftell(file);
+    bool isFileEmpty = ftell(file);
 
     size_t file_size = ftell(file);
-    printf("%llu",file_size);
+    printf("\n%llu",file_size);
 
-    if(!file_empty) {
+    if(!isFileEmpty) {
         id = 1;
-        fclose(file);
-    }else {
-        fclose(file);
-
-        file = fopen("student.dat", "r");
-
-        long max_len = 55+1; //max_len is 56, the plus 1 is to signify the null terminator
+    }else if (file_size <= 55) {
+        id = 2;
+    }else if (isFileEmpty && file_size > 54) {
+        long max_len = 56+1; //max_len is 56, the plus 1 is to signify the null terminator
         char buff[max_len]; //buffer is 56 characters long
 
         fseek(file, -max_len, SEEK_END);
 
         fread(buff, max_len-1, 1, file);
-
-        fclose(file);
 
         buff[max_len-1] = '\0'; // [55] which is the last character in the array is null terminated!
         char *last_newline = strrchr(buff, '\n'); // finds the last occurence of a newline in the buffer.
@@ -192,7 +187,7 @@ void add_student() {
         if (last_newline != NULL) {
             int count = 0;
             char id_str[4]; //max for characters for an ID
-            while (*last_line != ',' || count < 5) { //until the last_line character doesnt equal a comma contunue the loop
+            while (*last_line != ',' || count < 4) { //until the last_line character doesnt equal a comma contunue the loop
                 id_str[count] = *last_line; //add the last line char to the ID char.
                 *last_line++; //check next last line character
                 count++; // counter increases
@@ -205,25 +200,23 @@ void add_student() {
     sprintf(entry,"%04d,NAME:%s,YEAR:%d,CLASS:%s", id, name, year, class_input); //pad ID with leading 0s max of four
     size_t entry_length = strlen(entry);
 
-    if (entry_length < 56) {
-        for (int i = entry_length; i < 56; ++i) {
-            entry[i] = ' ';
+    if (entry_length < 55) {
+        for (int i = entry_length; i <= 54; i++) {
+            entry[i] = '~';
         }
-        entry[55] = "\0";
+        entry[55] = '\0';
     }
 
-    file = fopen("student.dat","a");
+    fseek(file, 0, SEEK_END);
 
-    //fprintf(file, "\n%04d,NAME:%s,YEAR:%d,CLASS:%s", id, name, year, class_input);
-    // If the file is empty then no need for \n character.
-
-    if (!file_empty) {
-        fprintf(file, "%s", entry);
-    }else {
-        fprintf(file, "\n%s", entry);
-
+    int retval;
+    if (!isFileEmpty) {
+        retval = fprintf(file, "%s", entry);
+    }else if (isFileEmpty) {
+        retval = fprintf(file, "\n%s", entry);
     }
 
+    printf("\n%d", retval);
 
     fclose(file);
 
