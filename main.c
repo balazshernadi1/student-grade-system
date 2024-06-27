@@ -1,4 +1,4 @@
-#include <stdio.h>
+﻿#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -78,8 +78,17 @@ void find_student() {
     printf("Please enter the ID of the Student");
     read_line(id, 2);
 
-    FILE * file = fopen("student.txt", "r");
+    FILE * file = fopen("student.dat", "r");
 
+    fseek(file,2, SEEK_SET);
+
+    char buff[24];
+
+    fread(buff, 5, 1, file);
+
+    buff[23] = "\0";
+
+    printf(buff);
     /*
     *Explanation
     Struct Definition:
@@ -112,7 +121,7 @@ void add_student() {
     int year_input;
     enum Year year;
     enum Class class;
-    int id = 1;
+    int id;
 
     printf("Name of the student:\n");
     read_line(name, 50);
@@ -148,20 +157,28 @@ void add_student() {
         exit(0);
     }
 
-    FILE * file = fopen("student.txt", "r");
+    //find out if the file exists, if it does then find the size of the file.
+    //if the file size is less than 54 chars then no newline.
+
+    FILE * file = fopen("student.dat", "r");
 
     fseek(file, 0, SEEK_END);
 
-    if(ftell(file)==0) {
+    bool file_empty = ftell(file);
+
+    size_t file_size = ftell(file);
+    printf("%llu",file_size);
+
+    if(!file_empty) {
         id = 1;
         fclose(file);
     }else {
         fclose(file);
 
-        file = fopen("student.txt", "r");
+        file = fopen("student.dat", "r");
 
-        long max_len = 55+1;
-        char buff[max_len+1];
+        long max_len = 55+1; //max_len is 56, the plus 1 is to signify the null terminator
+        char buff[max_len]; //buffer is 56 characters long
 
         fseek(file, -max_len, SEEK_END);
 
@@ -169,36 +186,72 @@ void add_student() {
 
         fclose(file);
 
-        buff[max_len-1] = '\0';
-        char *last_newline = strrchr(buff, '\n');
-        char *last_line = last_newline+1;
+        buff[max_len-1] = '\0'; // [55] which is the last character in the array is null terminated!
+        char *last_newline = strrchr(buff, '\n'); // finds the last occurence of a newline in the buffer.
+        char *last_line = last_newline+1; //the last line will always be after the newline char therefore the plus one
         if (last_newline != NULL) {
             int count = 0;
-            char id_str[4];
-            while (*last_line != ',') {
-                id_str[count] = *last_line;
-                *last_line++;
-                count++;
+            char id_str[4]; //max for characters for an ID
+            while (*last_line != ',' || count < 5) { //until the last_line character doesnt equal a comma contunue the loop
+                id_str[count] = *last_line; //add the last line char to the ID char.
+                *last_line++; //check next last line character
+                count++; // counter increases
             }
-            id = atoi(id_str)+1;
+            id = atoi(id_str)+1; // take the last ID from the entry and now increase it by one, thats the id of the next entry.
         }
     }
 
-    char entry[55];
-    sprintf(entry,"%04d,NAME:%s,YEAR:%d,CLASS%s", id, name, year, class_input);
+    char entry[56];
+    sprintf(entry,"%04d,NAME:%s,YEAR:%d,CLASS:%s", id, name, year, class_input); //pad ID with leading 0s max of four
     size_t entry_length = strlen(entry);
 
-    if (entry_length < 55) {
-        for (int i = entry_length; i < 54; ++i) {
-            entry[entry_length] = " ";
+    if (entry_length < 56) {
+        for (int i = entry_length; i < 56; ++i) {
+            entry[i] = ' ';
         }
+        entry[55] = "\0";
     }
 
-    file = fopen("student.txt","a");
+    file = fopen("student.dat","a");
 
-    fprintf(file, "\n%04d,NAME:%s,YEAR:%d,CLASS:%s", id, name, year, class_input);
+    //fprintf(file, "\n%04d,NAME:%s,YEAR:%d,CLASS:%s", id, name, year, class_input);
+    // If the file is empty then no need for \n character.
+
+    if (!file_empty) {
+        fprintf(file, "%s", entry);
+    }else {
+        fprintf(file, "\n%s", entry);
+
+    }
+
 
     fclose(file);
+
+    /*
+    *   FILE * file = fopen("student.dat", "r");
+    int id = 3;
+    long offset = (id-1)*54+(id-1);
+
+    if (file==NULL) {
+        printf("File not found");
+    }else {
+        fseek(file, 0, SEEK_END);
+        size_t file_size = ftell(file);
+
+        if (file_size <= 54) {
+            char buff[55];
+            fseek(file, 0, SEEK_SET);
+            fread(buff, 1, 54, file);
+            buff[54] = "\0";
+            printf(buff);
+        }else {
+            char buff[55];
+            fseek(file, offset, SEEK_SET);
+            fread(buff, 1, 54, file);
+            buff[54] = "\000";
+            printf(buff);
+        }
+     */
 }
 
 
@@ -235,14 +288,19 @@ int read_line(char s[], int maxlen) {
 
 
 int main(void) {
-   //print_main_menu();
    char str[10] = "BalazsG";
    size_t strlenght = strlen(str);
+   print_main_menu();
+   /*
+    *
+    for (int i = strlenght; i < 10; ++i) {
+        printf("\n%d", i);
+        str[i] = 'A';
+    }
+    printf("\n%s", str);
+    *
+    */
 
-   for (int i = strlenght; i < 10; ++i) {
-       printf("\n%d", i);
-       str[i] = 'A';
-   }
-   printf("\n%s", str);
+
 
 }
