@@ -73,20 +73,32 @@ void print_manage_student_menu() {
 }
 
 void find_student() {
-    char id[2];
+    char id_str[2];
 
     printf("Please enter the ID of the Student");
-    read_line(id, 2);
+    read_line(id_str, 2);
 
     FILE * file = fopen("student.dat", "r");
+    int id = atoi(id_str);
+    long offset = id*55+(id-1);
+    char buff[56];
 
-    fseek(file,2, SEEK_SET);
+    fseek(file, 0, SEEK_END);
+    size_t filesize = ftell(file);
 
-    char buff[24];
+    if (offset > filesize) {
+        printf("The ID does not exist in the file.");
+    }
 
-    fread(buff, 5, 1, file);
+    if (id == 1) {
+        fseek(file, 0, SEEK_SET);
+        fread(buff, 1, 55, file);
+    } else {
+        fseek(file, offset, SEEK_SET);
+        fread(buff, 1, 55, file);
+    }
 
-    buff[23] = "\0";
+    buff[55] = "\0";
 
     printf(buff);
     /*
@@ -283,7 +295,7 @@ int read_line(char s[], int maxlen) {
 int main(void) {
    char str[10] = "BalazsG";
    size_t strlenght = strlen(str);
-   print_main_menu();
+   //print_main_menu();
    /*
     *
     for (int i = strlenght; i < 10; ++i) {
@@ -294,6 +306,15 @@ int main(void) {
     *
     */
 
+
+    /*
+     * Make code more clear and prettier!
+     * Write a function which returns the file size.
+     * Write comments where needed.
+     * Decouple user input and file I/O operations
+     * Make sure when finding the student to check the entry ID against the user inputted ID.
+     * DO IT SUNDAY!
+     */
 
 
 }
